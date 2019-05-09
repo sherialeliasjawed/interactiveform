@@ -7,6 +7,7 @@ $(document).ready(function() {
   const $otherInput = $('#other-job');
   $otherInput.hide();
 
+  // Change event handler that enables "other jobs" input field if selected.
   $titleDropdown.change(function() {
     if ($titleDropdown.val() === 'other') {
       $otherInput.show();
@@ -23,6 +24,7 @@ $(document).ready(function() {
   const $colorDropdown = $('#color');
   $colorDropdown.parent().hide();
 
+  // Change event handler that shows and hides T-Shirts according to design selected.
   $designDropdown.change(function() {
     if ($(this).val() === 'js puns') {
       $colorDropdown.parent().show();
@@ -48,6 +50,7 @@ $(document).ready(function() {
   const $totalCounter = '<span id="total-counter"></span>';
   $('.activities').append($totalCounter);
 
+  // Applying a dollar value to each activitiy.
   for (let i = 0; i < $activities.length; i++) {
     if (i === 0) {
       $($activities[i]).val(200);
@@ -56,6 +59,7 @@ $(document).ready(function() {
     }
   }
 
+  // Function makes sure clashing events are disabled.
   const disableClashing = (initialEvent, clashingEvent) => {
     if ($(`[name="${initialEvent}"]`).is(':checked')) {
       $(`[name="${clashingEvent}"]`).attr('disabled', true);
@@ -70,6 +74,7 @@ $(document).ready(function() {
     }
   };
 
+  // Change event handler for the checkboxes to track total value
   $activities.change(function() {
     if ($(this).is(':checked')) {
       total += parseInt($(this).val());
@@ -83,6 +88,7 @@ $(document).ready(function() {
       $('#total-counter').text(`Total: $${total}`);
     }
 
+    // Calling the disableClashing function to disable clashing events.
     disableClashing('js-frameworks', 'express');
     disableClashing('js-libs', 'node');
     disableClashing('express', 'js-frameworks');
@@ -98,12 +104,15 @@ $(document).ready(function() {
   $paypalDiv = $creditcardDiv.next();
   $bitcoinDiv = $paypalDiv.next();
 
+  // Hiding non-default options.
   $paypalDiv.hide();
   $bitcoinDiv.hide();
 
+  // Setting credit card as the default option.
   $('[value="credit card"]').attr('selected', true);
   $('[value="select_method').attr('disabled', true);
 
+  // Change event handler to show and hide correct payment information depending on user selection.
   $paymentDropdown.change(function(event) {
     if ($(this).val() === 'credit card') {
       $creditcardDiv.show();
@@ -126,52 +135,94 @@ $(document).ready(function() {
     FORM VALIDATION
    *************************/
 
+  // Function that validates name input with a regex check
   const validateName = () => {
     const isEmpty = /^\s*$/;
-    if (!isEmpty.test($('#name').val())) {
+    if (isEmpty.test($('#name').val())) {
+      $('#name').css('border', 'red 1px solid');
+      $('#name').attr('placeholder', 'Please enter a valid name..');
+      return false;
+    } else {
+      $('#name').css('border', '');
+      $('#name').attr('placeholder', '');
       return true;
     }
-    $('#name').css('border', 'red 3px solid');
-    $('#name').attr('placeholder', 'Please enter a valid name..');
     return false;
   };
 
+  // Function that validates email input with a regex check
   const validateMail = () => {
     const isMail = /^\w+@\w+\.\w+$/;
-    if (isMail.test($('#mail').val())) {
+    if (!isMail.test($('#mail').val())) {
+      $('#mail').css('border', 'red 1px solid');
+      $('#mail').attr('placeholder', 'Please enter a valid e-mail..');
+      return false;
+    } else {
+      $('#mail').css('border', 'none');
+      $('#mail').attr('placeholder', '');
       return true;
     }
-    $('#mail').css('border', 'red 3px solid');
-    $('#mail').attr('placeholder', 'Please enter a valid e-mail..');
     return false;
   };
 
+  // Function that validates that at least one activity is selected.
   const validateActivities = () => {
-    if ($('.activities input:checkbox:checked').length > 0) {
+    if ($('.activities input:checkbox:checked').length <= 0) {
+      $('.activities').css('border', '1px solid red');
+      return false;
+    } else {
+      $('.activities').css('border', '');
       return true;
     }
-    $('.activities').css('border', '3px solid red');
+
     return false;
   };
 
+  // Function that checks whether all credit card fields are valid and credit card is the preferred method of payment.
   const validateCreditcard = () => {
     const isCreditcard = /^\d{13,16}$/;
     const isZip = /^\d{5}$/;
     const isCVV = /^\d{3}$/;
+    let isValid = false;
 
-    if ($paymentDropdown.val() === 'credit card') {
-      if (isCreditcard.test($('#cc-num').val())) {
-        if (isZip.test($('#zip').val())) {
-          if (isCVV.test($('#cvv').val())) return true;
-        }
-      }
-    } else if ($paymentDropdown.val() !== 'credit card') {
+    if ($paymentDropdown.val() !== 'credit card') {
       return true;
     }
 
-    return false;
+    if ($paymentDropdown.val() === 'credit card') {
+      console.log('first if passed');
+      if (!isCreditcard.test($('#cc-num').val())) {
+        $('#cc-num').css('border', '1px solid red');
+        $('#cc-num').attr('placeholder', 'Invalid credit card number..');
+        isValid = false;
+      } else {
+        $('#cc-num').css('border', 'none');
+        $('#cc-num').attr('placeholder', '');
+        isValid = true;
+      }
+      if (!isZip.test($('#zip').val())) {
+        $('#zip').css('border', '1px solid red');
+        $('#zip').attr('placeholder', 'Invalid zip..');
+        isValid = false;
+      } else {
+        $('#zip').css('border', '');
+        $('#zip').attr('placeholder', '');
+        isValid = true;
+      }
+      if (!isCVV.test($('#cvv').val())) {
+        $('#cvv').css('border', '1px solid red');
+        $('#cvv').attr('placeholder', 'Invalid CVV');
+        isValid = false;
+      } else {
+        $('#cvv').css('border', '');
+        $('#cvv').attr('placeholder', '');
+        isValid = true;
+      }
+    }
+    return isValid;
   };
 
+  // Submit event handler that makes sure all validation functions pass before submitting.
   $('form').submit(function(event) {
     const name = validateName();
     const mail = validateMail();
